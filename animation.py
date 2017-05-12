@@ -4,6 +4,9 @@ global num_rect
 num_rect = 0
 global num_circle
 num_circle = 0
+global current_y
+current_y = 25
+global canvas_width #continue here
 class Application():
     def __init__(self,master):
         self.frame = Frame(master,width=400,height=400)
@@ -12,18 +15,19 @@ class Application():
 
     def create_gui(self):
         self.v = StringVar()
+        self.num_ins =StringVar()
         # display_area label
         self.label1 = Label(self.frame,text="Display Area")
         self.label1.grid(row=1,column=1)
         #canvas area
-        self.display_area = Canvas(self.frame,width=400,height=300,bg="#ECECEC")
+        self.display_area = Canvas(self.frame,width=800,height=600,bg="#ECECEC")
         self.display_area.grid(column=1,row=2,rowspan=7,padx=5,pady=5)
 
         #Resource Area
         self.label2 = Label(self.frame,text="Resource Name")
         self.label3 = Label(self.frame,text="# of Instances")
         self.res_name = Entry(self.frame,textvariable=self.v)
-        self.res_instance = Entry(self.frame)
+        self.res_instance = Entry(self.frame,textvariable=self.num_ins);
         self.button_add_resource = Button(self.frame,text="Add Resource",command=self.add_rect)
         self.label2.grid(row=2,column=2)
         self.res_name.grid(row=2,column=3)
@@ -43,16 +47,27 @@ class Application():
         #delete
         self.button_reset = Button(self.frame,text="Clear Screen",command=self.clear_canvas)
         self.button_reset.grid(row=7,column=2,sticky="E"+"W",columnspan=2)
+
     def add_rect(self):
         global num_rect
+        global current_y
         s = self.v.get()
+        numins =self.num_ins.get()
         x = 175
-        y = 25 + num_rect*75
+        y = current_y
+        if(s == ""):
+            s = "R"+ str(num_rect)
+        for i in range(int(numins)):
+            coord = x,y,x+50,y,x+50,y+50,x+50,y+50,x,y+50
+            cir_coord = x+22,y+22,x+28,y+28
+            if(i==0):
+                text = self.display_area.create_text(x+60,y+25,text = s)
+            res1 = self.display_area.create_polygon(coord,fill="blue")
 
-        text = self.display_area.create_text(x+60,y+25,text = s)
-        coord = x,y,x+50,y,x+50,y+50,x+50,y+50,x,y+50
-        res1 = self.display_area.create_polygon(coord,fill="blue")
-        num_rect = num_rect+1
+            self.display_area.create_oval(cir_coord,fill="black")
+            y+=50
+        current_y = y + 25
+        num_rect+=1
 
     def add_circle(self):
         global num_circle
@@ -70,9 +85,12 @@ class Application():
     def clear_canvas(self):
         global num_circle
         global num_rect
+        global current_y
         self.display_area.delete("all")
         num_circle = 0
         num_rect = 0
+        current_y =0
+
 
 
 root = Tk()
