@@ -15,6 +15,8 @@ class myList:
                 print(str(i))
             else:
                 print("No node found")
+    def get_list(self):
+        return mylist
 
 
 class process_node:
