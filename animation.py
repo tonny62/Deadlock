@@ -1,4 +1,5 @@
 from tkinter import *
+import time as t
 
 global num_rect
 num_rect = 0
@@ -14,6 +15,17 @@ global process_list
 global resource_list
 global line_list
 
+
+def do_noting(void):
+    i = 0
+
+
+def time_delay(time):
+    start = t.time()
+    now = t.time()
+    while (now - start < time):
+        do_noting
+        now = t.time()
 
 class Application():
     def __init__(self, master):
@@ -32,12 +44,18 @@ class Application():
         self.om_variable2 = StringVar()
         self.om_variable3 = StringVar()
         self.om_variable4 = StringVar()
+        self.del_variable1 = StringVar()
+        self.del_variable2 = StringVar()
+        self.del_variable3 = StringVar()
+        self.del_variable4 = StringVar()
+        self.processfrom_del = StringVar
+
         # display_area label
         self.label1 = Label(self.frame, text="Display Area")
         self.label1.grid(row=1, column=1)
         # canvas area
         self.display_area = Canvas(self.frame, width=canvas_width, height=canvas_height, bg="#ECECEC")
-        self.display_area.grid(column=1, row=2, rowspan=10, padx=5, pady=5)
+        self.display_area.grid(column=1, row=2, rowspan=15, padx=5, pady=5)
 
         # Resource Area
         self.Resource_frame = LabelFrame(self.frame, text="Resource")
@@ -110,12 +128,57 @@ class Application():
         self.add_allocate.grid(row=2, column=5)
 
         #  Banker Frame
-        self.banker_frame = LabelFrame(self.frame, text="Run Banker")
+        self.banker_frame = LabelFrame(self.frame, text="Banker's Algoritm Section")
         self.banker_frame.grid(row=5, column=2)
-        # banker button
         self.button_banker = Button(self.banker_frame, text="Banker's", command=self.run_banker)
         self.button_banker.grid(row=1, column=2, sticky="E" + "W", columnspan=2)
-        ##todo Create delete frame
+
+        # Deleting edge frame
+        self.delete_frame = LabelFrame(self.frame, text="Deleting Edge Section")
+        self.delete_frame.grid(row=6, column=2)
+
+        # Deleting Request
+        # From Process
+        self.label_from = Label(self.delete_frame, text="From")
+        self.label_from.grid(row=1, column=1)
+        self.del_variable1.set('Process')
+        self.choices1 = [""]
+        self.delfromprocess = OptionMenu(self.delete_frame, self.del_variable1, *self.choices1)
+        self.delfromprocess.grid(row=1, column=2)
+        # To Resource
+        self.label_to = Label(self.delete_frame, text="To")
+        self.label_to.grid(row=1, column=3)
+        self.resto_del = StringVar()
+        self.del_variable2.set('Resource')
+        self.choices2 = [""]
+        self.delrequest_to = OptionMenu(self.delete_frame, self.del_variable2, *self.choices2)
+        self.delrequest_to.grid(row=1, column=4)
+        # add request button
+        self.delete_request = Button(self.delete_frame, text="Delete request",
+                                     command=lambda: self.delete_req_edge(self.del_variable1.get(),
+                                                                          self.del_variable2.get()))
+        self.delete_request.grid(row=1, column=5)
+
+        # Deleting Allocate
+        # From Resource
+        self.label_from = Label(self.delete_frame, text="From")
+        self.label_from.grid(row=2, column=1)
+        self.resfrom_del = StringVar()
+        self.del_variable3.set('Resource')
+        self.delfromres = OptionMenu(self.delete_frame, self.del_variable3, *self.choices1)
+        self.delfromres.grid(row=2, column=2)
+        # To Process
+        self.label_to = Label(self.delete_frame, text="To")
+        self.label_to.grid(row=2, column=3)
+        self.processto_del = StringVar()
+        self.del_variable4.set('Process')
+        self.delprocess_to = OptionMenu(self.delete_frame, self.del_variable4, *self.choices2)
+        self.delprocess_to.grid(row=2, column=4)
+        # add request button
+        self.del_allocate = Button(self.delete_frame, text="Add Allocate",
+                                   command=lambda: self.add_allocate_edge(self.del_variable3.get(),
+                                                                          self.del_variable4.get()))
+        self.del_allocate.grid(row=2, column=5)
 
     def run_banker(self):
         banker(resource_list, process_list, request_list, allocate_list)
@@ -174,10 +237,20 @@ class Application():
             y0 = self.fromnode1.ypos
             x1 = self.tonode1.xpos
             y1 = self.tonode1.ypos
-            obj = self.draw_req_arrow(x0 + 25, y0, x1, y1 - 25)
+            obj = self.display_area.create_line(x0 + 25, y0, x1, y1 - 25, arrow=LAST)
             line_obj = line_object(x0, y0, x1, y1, self.fromnode1, self.tonode1, obj)
+            print(obj)
             request_list.add_line(line_obj)
             print_vectors(resource_list, process_list, request_list, allocate_list)
+
+    def delete_req_edge(self, fromnode, tonode):
+        self.fromnode1 = process_list.get_node(str(fromnode))
+        self.tonode1 = resource_list.get_node(str(tonode))
+        line_obj = request_list.get_line(self.fromnode1, self.tonode1)
+        request_list.linelist.remove(line_obj)
+        print("deleting")
+        self.display_area.delete(line_obj.obj)
+        self.refresh_menu()
 
     def add_allocate_edge(self, fromnode, tonode):
         # print("Creating Allocate")
@@ -191,7 +264,7 @@ class Application():
             x0 = self.fromnode1.xpos
             x1 = self.tonode1.xpos
             y1 = self.tonode1.ypos
-            obj = self.draw_req_arrow(x0 + 25, y0 - 25, x1 + 25, y1)
+            obj = self.display_area.create_line(x0 + 25, y0 - 25, x1 + 25, y1, arrow=LAST)
             line_obj = line_object(x0 + 25, y0 - 25, x1 + 25, y1, self.fromnode1, self.tonode1, obj)
             allocate_list.add_line(line_obj)
             self.fromnode1.instance_left -= 1;
@@ -212,20 +285,32 @@ class Application():
     def refresh_menu(self):
         process_menu = self.fromprocess['menu']
         process_menu2 = self.process_to['menu']
+        process_menu3 = self.delfromprocess['menu']
+        process_menu4 = self.delprocess_to['menu']
         process_menu2.delete(0, "end")
         process_menu.delete(0, "end")
+        process_menu3.delete(0, "end")
+        process_menu4.delete(0, "end")
         for i in range(0, len(process_list.get_List())):
             value = process_list.get_node_name(i)
             process_menu.add_command(label=value, command=lambda v=value: self.om_variable1.set(v))
             process_menu2.add_command(label=value, command=lambda v=value: self.om_variable4.set(v))
+            process_menu3.add_command(label=value, command=lambda v=value: self.del_variable1.set(v))
+            process_menu4.add_command(label=value, command=lambda v=value: self.del_variable4.set(v))
         resource_menu2 = self.fromres['menu']
         resource_menu = self.request_to['menu']
+        resource_menu3 = self.delrequest_to['menu']
+        resource_menu4 = self.delfromres['menu']
         resource_menu.delete(0, "end")
         resource_menu2.delete(0, "end")
+        resource_menu3.delete(0, "end")
+        resource_menu4.delete(0, "end")
         for i in range(0, len(resource_list.get_List())):
             value = resource_list.get_node_name(i)
             resource_menu.add_command(label=value, command=lambda v=value: self.om_variable2.set(v))
             resource_menu2.add_command(label=value, command=lambda v=value: self.om_variable3.set(v))
+            resource_menu3.add_command(label=value, command=lambda v=value: self.del_variable2.set(v))
+            resource_menu4.add_command(label=value, command=lambda v=value: self.del_variable3.set(v))
 
 
 class myList:
@@ -257,6 +342,7 @@ class myList:
             print(str(self.mylist[i].xpos) + " ")
 
 
+
 class process_node:
     name = ""
     xpos = 0
@@ -286,7 +372,6 @@ class resource_node:
 
 
 class line_list:
-    ## todo create line object list
     linelist = []
 
     def __init__(self):
@@ -299,7 +384,9 @@ class line_list:
     def get_line(self, fromnode, tonode):
         for i in range(len(self.linelist)):
             if (fromnode == self.linelist[i].fromnode and tonode == self.linelist[i].tonode):
+                print(self.linelist[i].obj)
                 return self.linelist[i]
+
         return 0
 
     def get_allocate(self, tonode, fromnode):
@@ -475,7 +562,7 @@ class banker:
             lentempnow = self.check_left_finish()
             if (lentempnow == lentempprev):
                 print("no more sequence")
-        # break
+                break
         # print("done banker")
         print(self.sequence)
 
